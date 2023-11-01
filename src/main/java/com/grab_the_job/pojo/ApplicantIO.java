@@ -2,7 +2,8 @@ package com.grab_the_job.pojo;
 
 import lombok.Data;
 
-import java.io.File;
+import java.util.List;
+import org.springframework.web.multipart.MultipartFile;
 
 @Data
 public class ApplicantIO {
@@ -17,9 +18,10 @@ public class ApplicantIO {
     private String collegeName;
     private String courseName;
     private String bachelorsCGPA;
-    private File profilePicture;
-    private File tenthMarksSheet;
-    private File twelfthMarksSheet;
-    private File bachelorsMarksSheet;
-    private File resume;
+    private MultipartFile profilePicture;
+    private MultipartFile tenthMarksSheet;
+    private MultipartFile twelfthMarksSheet;
+    private MultipartFile bachelorsMarksSheet;
+    private MultipartFile resume;
+    private List<String> fileUrls;
 }

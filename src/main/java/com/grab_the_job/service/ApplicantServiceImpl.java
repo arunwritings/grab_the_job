@@ -22,9 +22,12 @@ public class ApplicantServiceImpl implements ApplicantService {
     @Autowired
     ApplicantRepo applicantRepo;
 
-    @Autowired
-    AmazonS3 amazonS3;
+    private final AmazonS3 amazonS3;
 
+    @Autowired
+    public ApplicantServiceImpl(AmazonS3 amazonS3) {
+        this.amazonS3 = amazonS3;
+    }
     @Value("${aws.bucketName}")
     String s3BucketName;
     @Override
@@ -40,11 +43,28 @@ public class ApplicantServiceImpl implements ApplicantService {
         applicantEntity.setCollegeName(applicantIO.getCollegeName());
         applicantEntity.setCourseName(applicantIO.getCourseName());
         applicantEntity.setBachelorsCGPA(applicantIO.getBachelorsCGPA());
-        for (String urls : uploadFilesToS3Bucket(files,applicantIO)){
-            applicantEntity.setFileUrls(Collections.singletonList(urls));
-        }
+        List<String> fileUrls = uploadFilesToS3Bucket(files, applicantIO);
+        applicantEntity.setFileUrls(fileUrls);
         applicantRepo.save(applicantEntity);
         return applicantEntity;
+    }
+
+    @Override
+    public ApplicantIO getApplicantDetails(String email) {
+        ApplicantEntity applicantEntity = applicantRepo.getApplicantDetails(email);
+        ApplicantIO applicantIO = new ApplicantIO();
+        applicantIO.setName(applicantEntity.getName());
+        applicantIO.setEmail(applicantEntity.getEmail());
+        applicantIO.setMobile(applicantEntity.getMobile());
+        applicantIO.setAddress(applicantEntity.getAddress());
+        applicantIO.setDateOfBirth(applicantEntity.getDateOfBirth());
+        applicantIO.setCollegeName(applicantEntity.getCollegeName());
+        applicantIO.setCourseName(applicantEntity.getCourseName());
+        applicantIO.setBachelorsCGPA(applicantEntity.getBachelorsCGPA());
+        applicantIO.setTenthGradePercentage(applicantEntity.getTenthGradePercentage());
+        applicantIO.setTwelfthGradePercentage(applicantEntity.getTwelfthGradePercentage());
+        applicantIO.setFileUrls(applicantEntity.getFileUrls());
+        return applicantIO;
     }
 
     private List<String> uploadFilesToS3Bucket(List<MultipartFile> files, ApplicantIO applicantIO) throws IOException {

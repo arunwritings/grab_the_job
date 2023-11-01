@@ -31,5 +31,10 @@ public class ApplicantController {
             }
         }
         return new ResponseEntity<>(new ApplicantInfoBody(RespStatus.ENTER_EMAIL), HttpStatus.BAD_REQUEST);
-        }
+    }
+
+    @GetMapping("/getDetails")
+    ResponseEntity<ApplicantIO> getApplicantDetails(@RequestParam("email") String email) {
+        return new ResponseEntity<>(applicantService.getApplicantDetails(email),HttpStatus.OK);
+    }
 }

@@ -10,4 +10,6 @@ import java.util.List;
 public interface ApplicantService {
 
     ApplicantEntity createProfile(List<MultipartFile> files,ApplicantIO applicantIO) throws IOException;
+
+    ApplicantIO getApplicantDetails(String email);
 }

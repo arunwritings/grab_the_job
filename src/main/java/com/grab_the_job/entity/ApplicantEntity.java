@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -46,6 +47,7 @@ public class ApplicantEntity {
     @Column(name = "bachelorsCGPA")
     private String bachelorsCGPA;
 
-    @Column(name = "fileUrls")
-    private List<String> fileUrls;
+    @ElementCollection
+    @Column(name = "file_urls")
+    private List<String> fileUrls = new ArrayList<>();
 }

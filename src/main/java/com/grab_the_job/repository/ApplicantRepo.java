@@ -8,6 +8,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ApplicantRepo extends JpaRepository<ApplicantEntity,Integer> {
 
-    @Query("select m from ApplicantIO m where m.mobile = :mobile")
-    ApplicantEntity getApplicantDetails(String mobile);
+    @Query("select m from ApplicantEntity m where m.email = :email")
+    ApplicantEntity getApplicantDetails(String email);
 }
