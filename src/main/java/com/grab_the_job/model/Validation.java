@@ -20,14 +20,6 @@ public class Validation {
         Validation.applicantRepo = applicantRepo;
     }
     public static boolean isValid(String email) {
-        if (isValidEmail(email)) {
-            ApplicantEntity emailExistence = applicantRepo.getApplicantDetails(email);
-            return emailExistence == null;
-        }
-        return false;
-    }
-
-    public static boolean isValidEmail(String email) {
         String regex = "^[a-zA-Z0-9+_.-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
         Pattern pattern = Pattern.compile(regex);
         Matcher matcher = pattern.matcher(email);
