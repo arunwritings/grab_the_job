@@ -22,13 +22,8 @@ public class ApplicantServiceImpl implements ApplicantService {
 
     @Autowired
     ApplicantRepo applicantRepo;
-
-    private final AmazonS3 amazonS3;
-
     @Autowired
-    public ApplicantServiceImpl(AmazonS3 amazonS3) {
-        this.amazonS3 = amazonS3;
-    }
+    AmazonS3 amazonS3;
     @Value("${aws.bucketName}")
     String s3BucketName;
     @Override
@@ -84,7 +79,7 @@ public class ApplicantServiceImpl implements ApplicantService {
             return createProfile(files,applicantIO);
         }
         // delete old images in s3 bucket
-        deleteS3Images(applicantIO.getFileUrls());
+        deleteS3Images(applicantEntity.getFileUrls());
         //upload new images
         List<String> s3ImageUrl = uploadFilesToS3Bucket(files,applicantIO);
         applicantEntity.setFileUrls(s3ImageUrl);
@@ -115,7 +110,7 @@ public class ApplicantServiceImpl implements ApplicantService {
     private List<String> uploadFilesToS3Bucket(List<MultipartFile> files, ApplicantIO applicantIO) throws IOException {
         List<String> uploadedFileUrls = new ArrayList<>();
         for (MultipartFile file : files) {
-            String fileName = generateFileName(file.getOriginalFilename());
+            String fileName = generateFileName(file.getOriginalFilename(), applicantIO);
             try {
                 InputStream inputStream = file.getInputStream();
                 ObjectMetadata metadata = new ObjectMetadata();
@@ -140,9 +135,8 @@ public class ApplicantServiceImpl implements ApplicantService {
         }
        return updated3Keys;
     }
-
-    private String generateFileName(String originalFileName) {
-        return System.currentTimeMillis() + "_" + originalFileName;
+    private String generateFileName(String originalFileName, ApplicantIO applicantIO) {
+        return applicantIO.getName() +"_"+ originalFileName;
     }
 
     private void deleteS3Images(List<String> oldFileUrls){
