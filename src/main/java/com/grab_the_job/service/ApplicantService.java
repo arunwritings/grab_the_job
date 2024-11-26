@@ -15,5 +15,5 @@ public interface ApplicantService {
 
     ApplicantEntity updateProfile(List<MultipartFile> files,ApplicantIO applicantIO) throws IOException;
 
-    String deleteProfile(String email);
+    void deleteProfile(String email);
 }

@@ -1,11 +1,7 @@
-package com.grab_the_job.model;
+package com.grab_the_job.util;
 
-import com.grab_the_job.constants.RespStatus;
-import com.grab_the_job.entity.ApplicantEntity;
 import com.grab_the_job.repository.ApplicantRepo;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import java.util.regex.Matcher;

@@ -1,4 +1,4 @@
-package com.grab_the_job.model;
+package com.grab_the_job.util;
 
 import lombok.Getter;
 
