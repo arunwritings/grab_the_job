@@ -1,11 +1,12 @@
 package com.grab_the_job.service;
 
-import com.amazonaws.AmazonServiceException;
 import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.grab_the_job.entity.ApplicantEntity;
 import com.grab_the_job.pojo.ApplicantIO;
 import com.grab_the_job.repository.ApplicantRepo;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,7 @@ import java.util.Collections;
 import java.util.List;
 
 @Service
+@Slf4j
 public class ApplicantServiceImpl implements ApplicantService {
 
     @Autowired
@@ -45,9 +47,9 @@ public class ApplicantServiceImpl implements ApplicantService {
             List<String> fileUrls = uploadFilesToS3Bucket(files, applicantIO);
             applicantEntity.setFileUrls(fileUrls);
             applicantRepo.save(applicantEntity);
-            return applicantEntity;
+            log.info("ApplicantServiceImpl:: event:Successfully saved the applicant details in Database. method:createProfile name {}, email {}", applicantIO.getName(), applicantIO.getEmail());
         }
-        throw new RuntimeException("This email already exists");
+        return applicantEntity;
     }
 
     @Override
@@ -67,7 +69,6 @@ public class ApplicantServiceImpl implements ApplicantService {
             applicantIO.setTenthGradePercentage(applicantEntity.getTenthGradePercentage());
             applicantIO.setTwelfthGradePercentage(applicantEntity.getTwelfthGradePercentage());
             applicantIO.setFileUrls(applicantEntity.getFileUrls());
-            return applicantIO;
         }
         return applicantIO;
     }
@@ -94,17 +95,18 @@ public class ApplicantServiceImpl implements ApplicantService {
         applicantEntity.setCourseName(applicantIO.getCourseName());
         applicantEntity.setBachelorsCGPA(applicantIO.getBachelorsCGPA());
         applicantRepo.save(applicantEntity);
+        log.info("ApplicantServiceImpl:: event:Successfully updated the applicant details in Database. method:updateProfile name {}, email {}", applicantIO.getName(), applicantIO.getEmail());
         return applicantEntity;
     }
 
     @Override
-    public String deleteProfile(String email) {
+    public void deleteProfile(String email) {
         ApplicantEntity applicantEntity = applicantRepo.getApplicantDetails(email);
         if (applicantEntity != null){
             deleteS3Images(applicantEntity.getFileUrls());
             applicantRepo.delete(applicantEntity);
+            log.info("ApplicantServiceImpl:: event:Successfully deleted the applicant details in Database. method:updateProfile, email {}", email);
         }
-        return "There is no profile with this email";
     }
 
     private List<String> uploadFilesToS3Bucket(List<MultipartFile> files, ApplicantIO applicantIO) throws IOException {
@@ -116,11 +118,16 @@ public class ApplicantServiceImpl implements ApplicantService {
                 ObjectMetadata metadata = new ObjectMetadata();
                 metadata.setContentType("pdf/jpeg");
                 metadata.setContentLength(file.getSize());
+                log.info("ApplicantServiceImpl:: event:Before uploading to s3. method:uploadFilesToS3Bucket , email {}, fileSize {}", applicantIO.getEmail(), file.getSize());
                 amazonS3.putObject(s3BucketName, fileName, inputStream, metadata);
+                log.info("ApplicantServiceImpl:: event:After uploading to s3. method:uploadFilesToS3Bucket , email {}", applicantIO.getEmail());
                 String fileUrl =  amazonS3.getUrl(s3BucketName, fileName).toString();
                 uploadedFileUrls.add(fileUrl);
-            } catch (IOException e) {
-                e.printStackTrace();
+            } catch (AmazonS3Exception e) {
+                log.error("ApplicantServiceImpl:: exception:AmazonS3Exception, event:Failed to upload to s3. {}", e.getMessage());
+            } catch (Exception e) {
+                log.error("Error while uploading file to s3. {}", e.getMessage());
+                throw e;
             }
         }
         return uploadedFileUrls;
@@ -145,10 +152,12 @@ public class ApplicantServiceImpl implements ApplicantService {
                 String oldKey = extractS3KeyFromUrl(Collections.singletonList(oldImageUrl)).toString();
                 try {
                     amazonS3.deleteObject(s3BucketName, oldKey);
-                    System.out.println("Deleted S3 objects: " + oldKey);
-                } catch (AmazonServiceException e) {
-                    System.err.println("Failed to delete S3 objects: " + oldKey);
-                    e.printStackTrace();
+                    log.info("ApplicantServiceImpl:: event:Successfully deleted the old files from s3. method:deleteS3Images");
+                } catch (AmazonS3Exception e) {
+                    log.error("ApplicantServiceImpl:: exception:AmazonS3Exception event:Failed to delete old files from s3. {}", e.getMessage());
+                } catch (Exception e) {
+                    log.error("Error while deleting old files from s3. e{}", e.getMessage());
+                    throw e;
                 }
             }
         }

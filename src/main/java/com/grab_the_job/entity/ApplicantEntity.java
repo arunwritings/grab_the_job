@@ -2,8 +2,8 @@ package com.grab_the_job.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.NonNull;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
